@@ -88,3 +88,6 @@ This prevents re-sending the same recent orders across restarts.
 Useful admin endpoints:
 - `GET /admin/sent` — view persisted sent IDs
 - `POST /admin/sent/reset` — clear sent IDs (handy for demos)
+
+## Demo gif
+![demo](/demo.gif)
