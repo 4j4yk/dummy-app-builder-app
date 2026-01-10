@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mage-OS → Node Flow POC</title>
+  <meta name="description" content="Minimal data-flow POC: Mage-OS orders → Node action runner → target endpoint." />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <div class="badge">Integration POC</div>
+      <h1>Commerce → Node.js → Target</h1>
+      <p class="subtitle">
+        Minimal, working proof that order data can flow from a commperce (Mageto-compatible) source
+        through a Node.js “App Builder-like” action and into a target endpoint.
+      </p>
+
+      <div class="actions">
+        <!-- Update these links after copying into your repo -->
+        <a class="btn" id="repoLink" href="#" target="_blank" rel="noreferrer">View on GitHub</a>
+        <a class="btn secondary" href="#run">Run Locally</a>
+        <a class="btn secondary" href="#api">API</a>
+      </div>
+
+      <p class="small-note">
+        GitHub Pages hosts this documentation only. The Node service runs locally (or on a host such as Render/Fly/EC2 later).
+      </p>
+    </header>
+
+    <section>
+      <h2>What this proves</h2>
+      <ul>
+        <li>Fetch recent orders from Mage-OS REST API</li>
+        <li>Invoke an action with an App Builder-like signature (<code>main(params)</code>)</li>
+        <li>Forward the order payload to a target endpoint</li>
+        <li>Persist forwarded IDs locally (<code>data/sent.json</code>) to avoid resending after restart</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Architecture</h2>
+      <pre class="code">
+Commerce (REST: /V1/orders)
+    ↓
+Node runner (poll or manual trigger)
+    ↓
+Action: actions/forward-order.js
+    ↓
+Target endpoint (dummy or real)
+      </pre>
+    </section>
+
+    <section id="run">
+      <h2>Run locally (macOS)</h2>
+      <ol>
+        <li>Install Node.js 20+ (Homebrew): <code>brew install node</code></li>
+        <li>Install deps: <code>npm install</code></li>
+        <li>Create env: <code>cp .env.example .env</code></li>
+        <li>Set <code>COMMERCE_BASE_URL</code> (e.g. <code>https://&lt;domain&gt;/rest/all/V1</code>)</li>
+        <li>Set <code>COMMERCE_ACCESS_TOKEN</code> (integration token preferred)</li>
+        <li>Start: <code>npm start</code></li>
+        <li>Trigger one cycle: <code>curl -X POST http://localhost:3000/run/poll-once</code></li>
+      </ol>
+
+      <div class="callout">
+        <strong>Tip:</strong> If you see “Cannot GET /target/orders”, that’s expected. The dummy target is a <code>POST</code> endpoint.
+      </div>
+    </section>
+
+    <section id="api">
+      <h2>API endpoints</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Health</h3>
+          <p><code>GET /health</code></p>
+        </div>
+        <div class="card">
+          <h3>Poll once</h3>
+          <p><code>POST /run/poll-once</code></p>
+        </div>
+        <div class="card">
+          <h3>Forward by ID</h3>
+          <p><code>POST /run/forward/:orderId</code></p>
+        </div>
+        <div class="card">
+          <h3>Dummy target</h3>
+          <p><code>POST /target/orders</code></p>
+        </div>
+        <div class="card">
+          <h3>View sent IDs</h3>
+          <p><code>GET /admin/sent</code></p>
+        </div>
+        <div class="card">
+          <h3>Reset sent IDs</h3>
+          <p><code>POST /admin/sent/reset</code></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Update the GitHub link</h2>
+      <p>
+        After copying these files into your repo, update <code>docs/index.html</code> and set the GitHub URL in the
+        <code>href</code> for the “View on GitHub” button.
+      </p>
+      <p class="small-note">
+        Optional: you can also append <code>?repo=https://github.com/4j4yk/dummy-app-builder-app</code> to the Pages URL for quick testing.
+      </p>
+    </section>
+
+    <footer class="footer">
+      <small>
+        Built for integration POCs. Keep it minimal; add resilience only when needed.
+      </small>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const repo = params.get("repo");
+      if (repo) {
+        const a = document.getElementById("repoLink");
+        a.href = repo;
+      }
+    })();
+  </script>
+</body>
+</html>
