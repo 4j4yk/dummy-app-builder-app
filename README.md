@@ -60,8 +60,36 @@ You should see:
 
 3. Place a new order in commerce, then run `/run/poll-once` again.
    You should see logs like:
-   - `[TARGET] Received order: <increment_id>`
+   - `[WAREHOUSE] Ingested order: <increment_id>` (pipeline mode)
    - `[POLL] attempted forwards: <n>`
+
+## Pipeline MVP
+This adds an enrichment step (region, riskScore, processedAt) and sends a slimmed payload to a local
+warehouse-like endpoint that appends JSON lines to `data/warehouse.jsonl`.
+
+Enriched payload fields:
+- `entity_id`, `increment_id`, `created_at`, `status`, `grand_total`, `customer_email`, `region`, `riskScore`, `processedAt`
+
+### Env vars
+Add to `.env` (defaults shown):
+- `PIPELINE_MODE=true`
+- `WAREHOUSE_URL=http://localhost:3000/warehouse/ingest`
+
+### Run + test
+```bash
+npm install
+cp .env.example .env
+npm start
+curl -X POST http://localhost:3000/run/poll-once
+curl http://localhost:3000/admin/sent
+curl http://localhost:3000/admin/warehouse?limit=5
+tail -n 5 data/warehouse.jsonl
+```
+
+Notes:
+- `POST /target/orders` is the only target endpoint; `GET /target/orders` returns a short instruction payload.
+- For a demo without creating a Commerce order manually, use: `curl -X POST http://localhost:3000/run/demo-order`
+- `/run/poll-once` returns a non-200 if any order failed to forward or ingest.
 
 ## Notes on COMMERCE_BASE_URL
 Recommended form:
@@ -88,6 +116,10 @@ This prevents re-sending the same recent orders across restarts.
 Useful admin endpoints:
 - `GET /admin/sent` — view persisted sent IDs
 - `POST /admin/sent/reset` — clear sent IDs (handy for demos)
+- `GET /admin/warehouse?limit=20` — view the most recent ingested records
 
 ## Demo gif
 ![demo](/demo.gif)
+
+## Testing
+No automated tests are configured yet; validation is manual via the endpoints above.

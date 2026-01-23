@@ -70,6 +70,10 @@ web_modules/
 .env.*
 !.env.example
 
+# Local data outputs
+/data/sent.json
+/data/warehouse.jsonl
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

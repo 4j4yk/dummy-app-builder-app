@@ -8,5 +8,5 @@ GitHub Repo → Settings → Pages:
 - Branch: main
 - Folder: /docs
 
-## Update the repo link
-Edit `docs/index.html` and set the correct GitHub repo URL on the "View on GitHub" button.
+## Repo link
+`docs/index.html` already points to this repo. You can override it by adding `?repo=...` to the Pages URL.
